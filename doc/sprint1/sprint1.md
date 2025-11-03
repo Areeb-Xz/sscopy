@@ -1,74 +1,75 @@
-# sprint1.md - Sprint 1 Planning
+# sprint1.md — Sprint 1 Plan
 
 ## Sprint Goal
-Establish core technical infrastructure and implement user authentication and basic group management. By end of Sprint 1, users can register, log in, create groups, and view groups.
+Deliver core technical infrastructure, with secure user registration, login, group creation, group listing, and an expense tracker that lets users add, edit, and delete expense items. All APIs align to the main user stories.
 
-## Sprint Duration
-**Start Date:** October 21, 2025  
-**End Date:** November 3, 2025  
-**Duration:** 2 weeks
+## Sprint Details
+- **Start:** Oct 21, 2025  
+- **End:** Nov 3, 2025  
+- **Team:** Mohammad Areeb (Backend), Prabhkrit Singh (Frontend), Samarjeet Singh (DB/DevOps)
 
-## Participants
-- Mohammad Areeb – Backend
-- Prabhkrit Singh – Frontend
-- Samarjeet Singh – Database/DevOps
+## Team Capacity Estimate
+- 3 × 15h/week × 2 weeks = 90 hours  
+- 15h buffer for reviews, meetings, and learning  
+- **Net dev hours:** 75h
 
-## Team Capacity
-- 3 members x ~15 hours/week = 90 hours total  
-- Buffer: 15 hours for meetings/learning  
-- Net capacity: 75 hours
+## User Stories
+### 1. User Registration
+- Register with first name, last name, email, password, confirm password
+- Validates formats, prevents duplicates, secure storage
+- Direct login on success and JWT issuance
 
-## User Stories Selected for Sprint 1
-### 1. User Registration (Backend, DB, Frontend)
-- User registers with email/password
-- Validates email/password, prevents duplicates
-- Confirmation & DB storage
+### 2. User Login
+- Login via email & password, validates credentials, issues JWT
 
-### 2. User Login (Backend, DB, Frontend)
-- Logs in with credentials
-- JWT token, redirects
-- Error handling
+### 3. Create Group
+- User creates a group, becomes admin, optional description, group appears in list
 
-### 3. Create Group (Backend, DB, Frontend)
-- Enter name, description
-- User set as admin
-- Success notification
+### 4. List Groups
+- User can view all groups, choosing group loads details
 
-### 4. View Groups List (Backend, DB, Frontend)
-- See groups you belong to
-- Group info, empty state
+### 5. Expense Tracker CRUD
+- User can add new expenses (amount, description, category, date)
+- User can edit existing expenses
+- User can delete expenses
+- All expense operations update in real-time and are reflected in group/account balance
 
-## Tasks & Assignment
-- **Mohammad**: Auth backend/API/controller/tests, groups backend
-- **Prabhkrit**: Auth forms/UI/integration, groups frontend/dashboard
-- **Samarjeet**: MongoDB setup, schema, index, test, DevOps
+## Acceptances (All)
+- All APIs tested via Postman/unit/integration
+- Frontend allows all main flows (register/login/create/list, expense tracker add/edit/delete)
+- Errors, loading, edge cases all handled
+- Docs/RPM updated
 
-## Development Workflow
-- Branching: `main`, `develop`, `feature/<story>`
-- PR approval required before merging
-- Daily async standups: “Yesterday, Today, Blockers”
-- Mid-sprint check-in and sprint review/retro
+## Task Assignment
+- **Mohammad:** Security, Auth/Expense/GroupController, backend endpoints, service layer, global exception, test coverage
+- **Prabhkrit:** Registration/login/group and expense forms/components, React API integration, CRUD UI, error display
+- **Samarjeet:** MongoDB schema/models, DB queries, test DB, prod/infra, GitHub/CI setup
+
+## Workflow & Process
+- Branching ('main', 'feature/<story>')
+- Daily async standup: Yesterday / Today / Blockers (GitHub/Slack)
+- PR review before merge
+- Demo + team retro on Sprint close (Nov 17)
+- See RPM.md for release-level process
 
 ## Definition of Done
-- Code reviewed, merged  
-- Acceptance criteria met  
-- Unit & integration tests (≥80%)  
-- Manual QA  
-- Docs updated  
+- PR reviewed & merged
+- All acceptance criteria passed
+- Test coverage >80%
+- Manual QA
 - No critical bugs
 
 ## Risks & Mitigation
-| Risk                             | Mitigation                                      |
-|----------------------------------|-------------------------------------------------|
-| MongoDB setup delays             | MongoDB Atlas cloud, early pairing              |
-| Frontend-backend API mismatch    | API specs Day 2, use mocks                      |
-| JWT/Auth complexity              | Backend pairing, test coverage                  |
-| Exam conflicts                   | Prioritize most important user stories early    |
-| Scope creep                      | Product Owner (Mohammad) gates changes          |
+| Risk                      | Mitigation              |
+|---------------------------|-------------------------|
+| Mongo issues              | Use Atlas / troubleshoot early |
+| Auth/Expense logic complexity | Dedicated pairing + doc |
+| API mismatch              | Contract reviewed by all |
+| Time crunch on exams      | Prioritize stories in week 1 |
+| Scope creep               | Locked sprint, PO control |
 
 ## Success Criteria
-- All five stories completed/tested  
-- Auth/group flows functional  
-- Responsive frontend  
-- 80%+ backend test coverage  
-- Demo video and retrospective completed
+- 5 stories fully done and tested
+- All data flowing end-to-end
+- All functionality verified (API, frontend, DB)
+- Sprint retro documented
