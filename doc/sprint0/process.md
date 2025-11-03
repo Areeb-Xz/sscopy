@@ -1,7 +1,7 @@
 ## Team Organization (Roles)
 Our team was organized based on a clear division of work and expertise to maximize efficiency and accountability:
 - **Prabhkrit Singh** led the **Front-end** using the MERN stack, ensuring the app’s interface was both user-friendly and technically robust.
-- **Mohammad Areeb** managed the **Back-end** development, using Java and its frameworks, focusing on server logic and integration.
+- **Mohammad Areeb** managed the **Back-end** development, using Javascript and its frameworks, focusing on server logic and integration.
 - **Samarjeet Singh Arora** was responsible for the **Database**, leveraging MongoDB (or MySQL) for efficient data storage and retrieval.
 Each member’s contact information was shared, and text messages were the primary communication channel for swift collaboration. This clear role distinction ensured that work did not overlap and each component of the system progressed smoothly.
 
