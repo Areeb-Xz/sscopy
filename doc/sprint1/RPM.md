@@ -24,9 +24,9 @@ Deliver a functional expense-sharing platform for students by the end of Decembe
 - Expense tracker: add, edit, delete expense items
 
 ## Release Timeline
-- **Sprint 1 (Nov 3–Nov 17 2025):** Infra, Registration/Auth, Group basics, Expense tracker CRUD
-- **Sprint 2 (Nov 18–Dec 1):** Expense flows, auditing, balance calculations
-- **Sprint 3 (Dec 2–Dec 15):** Advanced features, testing, polish
+- **Sprint 1:** Infra, Registration/Auth, Group basics, Expense tracker CRUD
+- **Sprint 2:** Expense flows, auditing, balance calculations
+- **Sprint 3:** Advanced features, testing, polish
 
 ## Success Metrics
 - Account & group creation fully functional
