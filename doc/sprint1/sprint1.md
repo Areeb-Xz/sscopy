@@ -29,16 +29,12 @@ Establish core technical infrastructure and implement user authentication and ba
 - JWT token, redirects
 - Error handling
 
-### 3. Profile View (Backend, DB, Frontend)
-- See email, name, join date
-- Fast & responsive UI
-
-### 4. Create Group (Backend, DB, Frontend)
+### 3. Create Group (Backend, DB, Frontend)
 - Enter name, description
 - User set as admin
 - Success notification
 
-### 5. View Groups List (Backend, DB, Frontend)
+### 4. View Groups List (Backend, DB, Frontend)
 - See groups you belong to
 - Group info, empty state
 
