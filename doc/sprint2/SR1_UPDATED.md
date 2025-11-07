@@ -238,4 +238,4 @@ The two unfinished stories are **critical for Sprint 2** and will be prioritized
 **Prepared by:** Group K  
 **Date:** November 7, 2025  
 **Sprint 1 Duration:** October 21 - November 3, 2025  
-**Demo Video:** [SplitSmart_Demo_Sprint1.mp4](../sprint1)
+**Demo Video:** [SplitSmart_Demo_Sprint1.mp4](../sprint1/SplitSmart_Demo_Sprint1.mp4)
