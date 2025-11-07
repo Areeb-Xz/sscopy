@@ -17,36 +17,113 @@ SplitSmart is a full-stack, MERN-based web application designed to simplify the 
 - Gamification and financial responsibility scoring  
 - Offline support with seamless synchronization  
 
-## Installation  
+text
+## 📝 Installation Process (For TAs)
 
-### Prerequisites  
-- Node.js (v22.17.1 or later)  
-- MongoDB (v6.0 or later)  
-- Git (v2.30 or later)  
+### 1. Prerequisites – Install Once
 
-### Setup  
+- **Git:** [https://git-scm.com/downloads](https://git-scm.com/downloads)
+- **Java JDK 17+**: [https://adoptium.net](https://adoptium.net)
+- **Maven**: [https://maven.apache.org/download.cgi](https://maven.apache.org/download.cgi)
+- **Node.js (v18+) & npm:** [https://nodejs.org/](https://nodejs.org/)
+- **MongoDB:** (Use local install or [MongoDB Atlas](https://www.mongodb.com/atlas))
+    - To run locally: [https://www.mongodb.com/try/download/community](https://www.mongodb.com/try/download/community)
 
-1. Clone the repository  
-   ```bash
-   git clone https://github.com/EECS3311F25/SplitSmart.git
-   cd splitsmart
-   ```
-2. Install dependencies  
-   ```bash
-   npm install
-   ```
-3. Configure environment variables  
-   - Copy `env.example` to `.env` and fill in values for:  
-     ```
-     PORT=
-     MONGODB_URI=
-     JWT_SECRET=
-     ```
-4. Run the development server  
-   ```bash
-   npm run dev
-   ```
-5. Open your browser at `http://localhost:3000`  
+---
+
+### 2. Clone the Repository
+
+
+git clone [https://github.com/Areeb-Xz/sscopy.git](https://github.com/Areeb-Xz/sscopy.git)
+cd sscopy
+text
+
+---
+
+### 3. Start MongoDB
+
+- If local: open a new terminal and run:
+    ```
+    mongod
+    ```
+- If using Atlas: get your MongoDB URI and username/password.
+
+---
+
+### 4. Setup and Run the Backend (Java Spring Boot)
+
+
+cd backend
+text
+
+Edit `src/main/resources/application.properties`:
+
+- For local MongoDB:
+    ```
+    spring.data.mongodb.uri=mongodb://localhost:27017/splitsmart
+    ```
+- For MongoDB Atlas (replace with your real credentials):
+    ```
+    spring.data.mongodb.uri=mongodb+srv://<username>:<password>@cluster.mongodb.net/splitsmart
+    ```
+
+**Build and run:**
+
+mvn clean install
+mvn spring-boot:run
+text
+
+The backend will run on: [http://localhost:5000](http://localhost:5000)
+
+---
+
+### 5. Setup and Run the Frontend (React + Vite)
+
+_Open a new terminal tab/window:_
+
+
+cd FrontEnd/signup
+npm install
+npm run dev
+text
+
+The frontend will run on: [http://localhost:5173](http://localhost:5173) (or whatever Vite displays)
+
+---
+
+### 6. How to Test
+
+- In your browser, go to: [http://localhost:5173](http://localhost:5173)
+- Register a new user (fill the sign-up form)
+- Log in
+- Use the dashboard and the expense tracker!
+- Add/Edit/Delete expenses, confirm total recalculates in real time.
+- Backend API is also documented with endpoint comments.
+
+---
+
+### 7. If You Encounter Errors
+
+- **Backend fails to start:**  
+    - "Port in use" – Use `lsof -i :5000` and kill the blocking process.
+    - "MongoDB connection fail" – Is `mongod` running? Is your URI correct?
+- **Frontend fails to start:**  
+    - Try deleting `node_modules` and run `npm install` again.
+    - Use `npm run dev -- --port 5174` if port is in use.
+- **API requests fail:**  
+    - Is backend running on `localhost:5000`?
+    - Is MongoDB running?
+    - Is the correct API URL set in `.env` if needed?
+
+---
+
+### 8. Stopping the Application
+
+- To stop backend: press `Ctrl+C` in the backend terminal
+- To stop frontend: press `Ctrl+C` in the frontend terminal
+- To stop MongoDB: close the mongod terminal or stop service
+
+Copy and paste this directly into your README or submission. This will let the TA set up, build, and run your full project with no ambiguity!
 
 ## Contribution  
 
