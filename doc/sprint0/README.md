@@ -17,113 +17,90 @@ SplitSmart is a full-stack, MERN-based web application designed to simplify the 
 - Gamification and financial responsibility scoring  
 - Offline support with seamless synchronization  
 
-text
-## 📝 Installation Process (For TAs)
 
-### 1. Prerequisites – Install Once
+## Installation (Node.js/Express + MongoDB + React/Vite)
 
-- **Git:** [https://git-scm.com/downloads](https://git-scm.com/downloads)
-- **Java JDK 17+**: [https://adoptium.net](https://adoptium.net)
-- **Maven**: [https://maven.apache.org/download.cgi](https://maven.apache.org/download.cgi)
-- **Node.js (v18+) & npm:** [https://nodejs.org/](https://nodejs.org/)
-- **MongoDB:** (Use local install or [MongoDB Atlas](https://www.mongodb.com/atlas))
-    - To run locally: [https://www.mongodb.com/try/download/community](https://www.mongodb.com/try/download/community)
+### Prerequisites
+- Git installed on your machine.
+- Node.js v18+ and npm installed.
+- MongoDB running locally or a MongoDB Atlas cluster.
+- Modern browser (Chrome/Firefox/Edge/Safari).
 
----
+### 1) Clone the repository
+```bash
+git clone [https://github.com/EECS3311F25/SplitSmart.git](https://github.com/EECS3311F25/SplitSmart.git)
+cd BackEnd
+```
+### 2) Start MongoDB
+- Local: start the MongoDB server process (mongod) so it listens on mongodb://localhost:27017.
+- Atlas: copy your mongodb+srv connection string from the Atlas dashboard.
 
-### 2. Clone the Repository
-
-
-git clone [https://github.com/Areeb-Xz/sscopy.git](https://github.com/Areeb-Xz/sscopy.git)
-cd sscopy
-text
-
----
-
-### 3. Start MongoDB
-
-- If local: open a new terminal and run:
-    ```
-    mongod
-    ```
-- If using Atlas: get your MongoDB URI and username/password.
-
----
-
-### 4. Setup and Run the Backend (Java Spring Boot)
-
-
-cd backend
-text
-
-Edit `src/main/resources/application.properties`:
-
-- For local MongoDB:
-    ```
-    spring.data.mongodb.uri=mongodb://localhost:27017/splitsmart
-    ```
-- For MongoDB Atlas (replace with your real credentials):
-    ```
-    spring.data.mongodb.uri=mongodb+srv://<username>:<password>@cluster.mongodb.net/splitsmart
-    ```
-
-**Build and run:**
-
-mvn clean install
-mvn spring-boot:run
-text
-
-The backend will run on: [http://localhost:5000](http://localhost:5000)
-
----
-
-### 5. Setup and Run the Frontend (React + Vite)
-
-_Open a new terminal tab/window:_
-
-
-cd FrontEnd/signup
+### 3) Backend setup (Node/Express)
+- Navigate to your backend folder where package.json for the API exists (e.g., `cd backend`).
+- Create a `.env` file with:
+```bash
+MONGODB_URI=mongodb://localhost:27017/splitsmart
+PORT=5000
+JWT_SECRET=replace_with_a_secure_random_string
+```
+- If using MongoDB Atlas, replace MONGODB_URI with your Atlas URI:
+```sh
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/splitsmart
+```
+- Install dependencies:
+```sh
 npm install
+```
+- Add scripts to package.json if not present:
+```json
+{
+"scripts": {
+"start": "node server.js",
+"dev": "nodemon server.js"
+}
+}
+```
+- Run the backend:
+```sh
 npm run dev
-text
+```
+- The API should be available at:
+[http://localhost:5000](http://localhost:5000/)
 
-The frontend will run on: [http://localhost:5173](http://localhost:5173) (or whatever Vite displays)
+### 4) Frontend setup (React + Vite)
+- Open a new terminal and go to the frontend folder, e.g.:
+```sh
+cd FrontEnd/signup
+```
+- Install dependencies:
+```sh
+npm install
+```
+- If your app expects an API base URL, create a `.env` file:
 
----
+VITE_API_URL=[http://localhost:5000](http://localhost:5000/)
 
-### 6. How to Test
+- Start the dev server:
+```sh
+npm run dev
+```
+- Open the shown Local URL (commonly):
 
-- In your browser, go to: [http://localhost:5173](http://localhost:5173)
-- Register a new user (fill the sign-up form)
-- Log in
-- Use the dashboard and the expense tracker!
-- Add/Edit/Delete expenses, confirm total recalculates in real time.
-- Backend API is also documented with endpoint comments.
+[http://localhost:5173](http://localhost:5173/)
 
----
 
-### 7. If You Encounter Errors
+### 5) Verify end-to-end
+- Register a user via the frontend.
+- Log in with the same credentials.
+- Use the dashboard to add, edit, and delete expenses.
+- Confirm data persists in MongoDB (local or Atlas).
 
-- **Backend fails to start:**  
-    - "Port in use" – Use `lsof -i :5000` and kill the blocking process.
-    - "MongoDB connection fail" – Is `mongod` running? Is your URI correct?
-- **Frontend fails to start:**  
-    - Try deleting `node_modules` and run `npm install` again.
-    - Use `npm run dev -- --port 5174` if port is in use.
-- **API requests fail:**  
-    - Is backend running on `localhost:5000`?
-    - Is MongoDB running?
-    - Is the correct API URL set in `.env` if needed?
+### 6) Common issues
+- Backend port in use: stop the other process or change PORT in `.env`.
+- MongoDB connection errors: verify MONGODB_URI and that MongoDB is running.
+- Frontend cannot reach API: confirm the backend is on http://localhost:5000 and VITE_API_URL matches.
+- Nodemon missing: `npm install --save-dev nodemon` in the backend, then `npm run dev`.
 
----
-
-### 8. Stopping the Application
-
-- To stop backend: press `Ctrl+C` in the backend terminal
-- To stop frontend: press `Ctrl+C` in the frontend terminal
-- To stop MongoDB: close the mongod terminal or stop service
-
-Copy and paste this directly into your README or submission. This will let the TA set up, build, and run your full project with no ambiguity!
 
 ## Contribution  
 

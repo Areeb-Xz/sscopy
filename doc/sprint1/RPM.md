@@ -1,4 +1,4 @@
-# RPM.md — Release Planning Meeting
+# Release Planning Meeting
 
 ## Meeting Details
 - **Date:** October 21, 2025
