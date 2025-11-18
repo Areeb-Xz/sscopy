@@ -86,7 +86,6 @@ exports.loginUser = async (req, res) => {
 // Get User Info
 exports.getUserInfo = async (req, res) => {
   try {
-    // req.user should be set by auth middleware
     const user = await User.findById(req.user.id).select("-password");
     
     if (!user) {
@@ -104,5 +103,46 @@ exports.getUserInfo = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: "Error fetching user info", error: err.message });
+  }
+};
+
+exports.updateMe = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { fullName, email, currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Update name/email
+    if (fullName) user.fullName = fullName.trim();
+    if (email && email.trim() !== user.email) {
+      const exists = await User.findOne({ email: email.trim() });
+      if (exists && String(exists._id) !== String(user._id)) {
+        return res.status(400).json({ message: 'Email already in use' });
+      }
+      user.email = email.trim();
+    }
+
+    // Update password if provided
+    if (newPassword) {
+      if (!currentPassword) {
+        return res.status(400).json({ message: 'Current password required' });
+      }
+      const bcrypt = require('bcryptjs');
+      const ok = await bcrypt.compare(currentPassword, user.password);
+      if (!ok) {
+        return res.status(400).json({ message: 'Current password is incorrect' });
+      }
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(newPassword, salt);
+    }
+
+    await user.save();
+    const { password, ...safe } = user.toObject();
+    return res.json({ user: safe, message: 'Profile updated' });
+  } catch (err) {
+    console.error('updateMe error:', err);
+    return res.status(500).json({ message: 'Failed to update profile' });
   }
 };

@@ -2,22 +2,44 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import groupService from '../../services/groupService';
+import api from "../../utils/api";
 
 const Home = () => {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [newGroup, setNewGroup] = useState({
     name: '',
     description: '',
   });
-  const { user, logout } = useAuth();
+  const [profileData, setProfileData] = useState({
+    fullName: '',
+    email: '',
+    currentPassword: '',
+    newPassword: '',
+    confirmNewPassword: ''
+  });
+  const [profileError, setProfileError] = useState('');
+  const [profileSuccess, setProfileSuccess] = useState('');
+
+  const { user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchGroups();
-  }, []);
+    // Initialize profile data from user
+    if (user) {
+      setProfileData({
+        fullName: user.fullName || '',
+        email: user.email || '',
+        currentPassword: '',
+        newPassword: '',
+        confirmNewPassword: ''
+      });
+    }
+  }, [user]);
 
   const fetchGroups = async () => {
     try {
@@ -41,6 +63,55 @@ const Home = () => {
       fetchGroups();
     } catch (err) {
       setError(err.message || 'Failed to create group');
+    }
+  };
+
+  const handleProfileUpdate = async (e) => {
+    e.preventDefault();
+    setProfileError('');
+    setProfileSuccess('');
+
+    // Basic validation
+    if (profileData.newPassword && profileData.newPassword !== profileData.confirmNewPassword) {
+      setProfileError('New passwords do not match');
+      return;
+    }
+    if (profileData.newPassword && profileData.newPassword.length < 8) {
+      setProfileError('New password must be at least 8 characters');
+      return;
+    }
+
+    try {
+      const body = {
+        fullName: profileData.fullName,
+        email: profileData.email,
+      };
+
+      if (profileData.newPassword) {
+        body.currentPassword = profileData.currentPassword || '';
+        body.newPassword = profileData.newPassword;
+      }
+
+      const { data } = await api.put('/auth/me', body);
+
+      // Update AuthContext so name refreshes immediately
+      updateUser(data.user);
+
+      setProfileSuccess('Profile updated successfully!');
+      setProfileData((prev) => ({
+        ...prev,
+        currentPassword: '',
+        newPassword: '',
+        confirmNewPassword: '',
+      }));
+
+      setTimeout(() => {
+        setShowProfileModal(false);
+        setProfileSuccess('');
+      }, 1000);
+    } catch (err) {
+      const msg = err?.response?.data?.message || 'Failed to update profile';
+      setProfileError(msg);
     }
   };
 
@@ -99,27 +170,262 @@ const Home = () => {
             </div>
           </div>
 
-          <button
-            onClick={logout}
-            style={{
-              padding: "10px 20px",
-              background: "#ef4444",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              fontWeight: 600,
-              cursor: "pointer",
-              fontSize: "0.95rem",
-              boxShadow: "0 2px 8px rgba(239,68,68,0.2)",
-              transition: "all 0.2s"
-            }}
-            onMouseEnter={(e) => e.target.style.background = "#dc2626"}
-            onMouseLeave={(e) => e.target.style.background = "#ef4444"}
-          >
-            Logout
-          </button>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <button
+              onClick={() => setShowProfileModal(true)}
+              style={{
+                padding: "10px 20px",
+                background: "#f3f4f6",
+                color: "#374151",
+                border: "1px solid #d1d5db",
+                borderRadius: 8,
+                fontWeight: 600,
+                cursor: "pointer",
+                fontSize: "0.95rem",
+                transition: "all 0.2s"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = "#e5e7eb";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = "#f3f4f6";
+              }}
+            >
+              Profile
+            </button>
+
+            <button
+              onClick={logout}
+              style={{
+                padding: "10px 20px",
+                background: "#ef4444",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+                fontWeight: 600,
+                cursor: "pointer",
+                fontSize: "0.95rem",
+                boxShadow: "0 2px 8px rgba(239,68,68,0.2)",
+                transition: "all 0.2s"
+              }}
+              onMouseEnter={(e) => e.target.style.background = "#dc2626"}
+              onMouseLeave={(e) => e.target.style.background = "#ef4444"}
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* PROFILE MODAL */}
+      {showProfileModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000
+          }}
+          onClick={() => setShowProfileModal(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff",
+              borderRadius: 16,
+              maxWidth: 500,
+              width: "90%",
+              padding: "32px 28px",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.15)"
+            }}
+          >
+            <h2 style={{ margin: "0 0 24px 0", fontSize: "1.8rem", fontWeight: "700", color: "#1f2937" }}>
+              Edit Profile
+            </h2>
+
+            {profileError && (
+              <div
+                style={{
+                  padding: "12px 16px",
+                  marginBottom: 16,
+                  background: "#fee",
+                  border: "1px solid #fcc",
+                  borderRadius: 8,
+                  color: "#c33",
+                  fontSize: "0.9rem"
+                }}
+              >
+                {profileError}
+              </div>
+            )}
+
+            {profileSuccess && (
+              <div
+                style={{
+                  padding: "12px 16px",
+                  marginBottom: 16,
+                  background: "#d1fae5",
+                  border: "1px solid #6ee7b7",
+                  borderRadius: 8,
+                  color: "#065f46",
+                  fontSize: "0.9rem"
+                }}
+              >
+                {profileSuccess}
+              </div>
+            )}
+
+            <form onSubmit={handleProfileUpdate}>
+              <div style={{ marginBottom: 18 }}>
+                <label style={{ display: "block", marginBottom: 8, fontWeight: 600, fontSize: "0.95rem" }}>
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={profileData.fullName}
+                  onChange={(e) => setProfileData({ ...profileData, fullName: e.target.value })}
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 8,
+                    fontSize: "1rem",
+                    background: "#f9fafb"
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: 18 }}>
+                <label style={{ display: "block", marginBottom: 8, fontWeight: 600, fontSize: "0.95rem" }}>
+                  Email
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={profileData.email}
+                  onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 8,
+                    fontSize: "1rem",
+                    background: "#f9fafb"
+                  }}
+                />
+              </div>
+
+              <hr style={{ margin: "24px 0", border: "none", borderTop: "1px solid #e5e7eb" }} />
+
+              <p style={{ fontSize: "0.9rem", color: "#6b7280", marginBottom: 16 }}>
+                Leave password fields empty to keep current password
+              </p>
+
+              <div style={{ marginBottom: 18 }}>
+                <label style={{ display: "block", marginBottom: 8, fontWeight: 600, fontSize: "0.95rem" }}>
+                  Current Password
+                </label>
+                <input
+                  type="password"
+                  value={profileData.currentPassword}
+                  onChange={(e) => setProfileData({ ...profileData, currentPassword: e.target.value })}
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 8,
+                    fontSize: "1rem",
+                    background: "#f9fafb"
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: 18 }}>
+                <label style={{ display: "block", marginBottom: 8, fontWeight: 600, fontSize: "0.95rem" }}>
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  value={profileData.newPassword}
+                  onChange={(e) => setProfileData({ ...profileData, newPassword: e.target.value })}
+                  placeholder="At least 8 characters"
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 8,
+                    fontSize: "1rem",
+                    background: "#f9fafb"
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: 24 }}>
+                <label style={{ display: "block", marginBottom: 8, fontWeight: 600, fontSize: "0.95rem" }}>
+                  Confirm New Password
+                </label>
+                <input
+                  type="password"
+                  value={profileData.confirmNewPassword}
+                  onChange={(e) => setProfileData({ ...profileData, confirmNewPassword: e.target.value })}
+                  placeholder="Re-enter new password"
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 8,
+                    fontSize: "1rem",
+                    background: "#f9fafb"
+                  }}
+                />
+              </div>
+
+              <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowProfileModal(false);
+                    setProfileError('');
+                    setProfileSuccess('');
+                  }}
+                  style={{
+                    padding: "12px 24px",
+                    background: "#f3f4f6",
+                    color: "#374151",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 8,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    fontSize: "1rem"
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  style={{
+                    padding: "12px 24px",
+                    background: "#2563eb",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 8,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    fontSize: "1rem",
+                    boxShadow: "0 2px 8px rgba(37,99,235,0.25)"
+                  }}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* MAIN CONTENT */}
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "32px 24px" }}>
@@ -179,7 +485,7 @@ const Home = () => {
           </div>
         )}
 
-        {/* CREATE FORM MODAL */}
+        {/* CREATE FORM */}
         {showCreateForm && (
           <div
             style={{
