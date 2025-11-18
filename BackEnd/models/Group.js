@@ -35,10 +35,17 @@ const GroupSchema = new mongoose.Schema(
 
 // Method to check if user is a member
 GroupSchema.methods.isMember = function (userId) {
-  return this.members.some(
-    (member) => member.user.toString() === userId.toString()
-  );
+  return this.members.some((member) => {
+    if (typeof member.user === 'object' && member.user._id) {
+      // popluated user object
+      return member.user._id.toString() === userId.toString();
+    } else {
+      // direct ObjectId reference
+      return member.user.toString() === userId.toString();
+    }
+  });
 };
+
 
 // Method to check if user is admin
 GroupSchema.methods.isAdmin = function (userId) {
