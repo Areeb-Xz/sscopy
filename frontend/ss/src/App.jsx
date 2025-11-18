@@ -1,47 +1,60 @@
-  import React from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
-  import{
-    BrowserRouter as Router,
-    Routes,
-    Route,
-    Navigate
-  } from "react-router-dom";
+// Import your pages
+import Login from './pages/Auth/Login';
+import Register from './pages/Auth/Register';
+import Home from './pages/Dashboard/Home';
+import Expense from './pages/Dashboard/Expense';
+import Income from './pages/Dashboard/Income';
 
- 
-  import Login from './pages/Auth/Login.jsx';
-  import Income from './pages/Dashboard/Income.jsx';
-  import Expense from './pages/Dashboard/Expense.jsx';
-  import SignUp from './pages/Auth/SignUp.jsx';
-  import Home from './pages/Dashboard/Home.jsx';
+function App() {
+  const { isAuthenticated } = useAuth();
 
+  return (
+    <Routes>
+      {/* Public routes */}
+      <Route 
+        path="/login" 
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />} 
+      />
+      <Route 
+        path="/register" 
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />} 
+      />
 
-  const App = () => {
-    return (
-      <div>
-        <Router>
-          <Routes>
-            <Route path="/" element={<Root />} />
-            <Route path="/login" exact element={<Login />} />
-            <Route path="/signUp" exact element={<SignUp />} />
-            <Route path="/dashboard" exact element={<Home />} />
-            <Route path="/income" exact element={<Income />} />
-            <Route path="/expense" exact element={<Expense />} />
-            
-          </Routes>
-        </Router>
-      </div>
-    )
-  }
+      {/* Protected routes */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Home />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/expenses"
+        element={
+          <ProtectedRoute>
+            <Expense />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/income"
+        element={
+          <ProtectedRoute>
+            <Income />
+          </ProtectedRoute>
+        }
+      />
 
-  export default App;
+      {/* Default redirect */}
+      <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
 
-
-  const Root = () => {
-    const isAuthenticated = !!localStorage.getItem("token"); 
-
-    return isAuthenticated ? ( 
-    <Navigate to="/dashboard" /> 
-    ) : (  
-      <Navigate to="/login" />
-    );
-  };
+export default App;

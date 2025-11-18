@@ -1,69 +1,116 @@
-import React, { useState } from 'react'
-import AuthLayout from '../../components/layouts/AuthLayout'
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import Input from '../../components/Inputs/Input';
-import { validateEmail } from '../../utils/helper';
+import { useAuth } from '../../context/AuthContext';
 
 const Login = () => {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState(null);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-    const navigate = useNavigate();
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-    const handleLogin = async (e) =>{
-        e.preventDefault();
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+    setError(''); // Clear error when user types
+  };
 
-        if(!validateEmail(email)){
-            setError("Please enter a valid Email address");
-            return;
-        }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
 
-        if(!password){
-            setError("Please enter the password");
-            return;
-        }
-
-        setError("");
+    try {
+      await login(formData);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.message || 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
+  };
 
   return (
-    <AuthLayout>
-        <div className='lg:w-[70%] h-3/4 md:h-full flex flex-col justify-center'>
-            <h3 className='text-xl font-semibold text-black'>Welcome Back</h3>
-            <p className='text-xs text-slate-700 mt-[5px] mb-6'>
-                Please enter your details to log in 
-            </p>
-
-            <form onSubmit={handleLogin}>
-                <Input
-                    value={email}
-                    onChange={({ target }) => setEmail(target.value)}
-                    label="Email Address"
-                    placeholder="john@example.com"
-                    type="email"
-                />
-
-                <Input
-                    value={password}
-                    onChange={({ target }) => setPassword(target.value)}
-                    label="Password"
-                    placeholder="Min 8 characters"
-                    type="password"
-                />
-
-                {error && <p className='text-red-500 text-xs pb-2.5'>{error}</p>}
-
-                <button type="submit" className='btn-primary'>LOGIN</button>
-
-                <p className='text-[13px] text-slate-800 mt-3'>
-                    Don't have an account?{" "}
-                    <Link className="font-medium text-purple-500 underline" to="/signup">SignUp</Link>
-                </p>
-            </form>
+    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
+      <h2>Login to SplitSmart</h2>
+      
+      {error && (
+        <div style={{ 
+          padding: '10px', 
+          marginBottom: '20px', 
+          backgroundColor: '#fee', 
+          color: '#c33',
+          borderRadius: '4px' 
+        }}>
+          {error}
         </div>
-    </AuthLayout>
-  )
-}
+      )}
+
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: '15px' }}>
+          <label>Email:</label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            style={{ 
+              width: '100%', 
+              padding: '8px', 
+              marginTop: '5px',
+              border: '1px solid #ccc',
+              borderRadius: '4px'
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '15px' }}>
+          <label>Password:</label>
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+            style={{ 
+              width: '100%', 
+              padding: '8px', 
+              marginTop: '5px',
+              border: '1px solid #ccc',
+              borderRadius: '4px'
+            }}
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            width: '100%',
+            padding: '10px',
+            backgroundColor: loading ? '#ccc' : '#007bff',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: loading ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {loading ? 'Logging in...' : 'Login'}
+        </button>
+      </form>
+
+      <p style={{ marginTop: '20px', textAlign: 'center' }}>
+        Don't have an account? <Link to="/register">Register here</Link>
+      </p>
+    </div>
+  );
+};
 
 export default Login;
