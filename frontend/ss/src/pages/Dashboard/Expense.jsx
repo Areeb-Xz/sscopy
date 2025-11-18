@@ -4,7 +4,144 @@ import expenseService from '../../services/expenseService';
 import groupService from '../../services/groupService';
 import { toast } from 'react-hot-toast';
 import moment from 'moment';
-import { FaPlus, FaEdit, FaTrash, FaReceipt, FaTimes } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaReceipt } from 'react-icons/fa';
+import Modal from '../../components/Modal';
+
+// ------------------- Expense Form -------------------
+const ExpenseForm = ({ onSubmit, submitText, formData, onInputChange, categories }) => (
+  <form onSubmit={onSubmit}>
+    <div style={{ marginBottom: '16px' }}>
+      <label
+        style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}
+      >
+        Description *
+      </label>
+      <input
+        type="text"
+        name="description"
+        value={formData.description}
+        onChange={onInputChange}
+        required
+        placeholder="e.g., Grocery shopping"
+        style={{
+          width: '100%',
+          padding: '10px',
+          borderRadius: '8px',
+          border: '1px solid #d1d5db',
+          fontSize: '16px',
+        }}
+      />
+    </div>
+    <div style={{ marginBottom: '16px' }}>
+      <label
+        style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}
+      >
+        Amount ($) *
+      </label>
+      <input
+        type="number"
+        name="amount"
+        value={formData.amount}
+        onChange={onInputChange}
+        required
+        step="0.01"
+        min="0"
+        placeholder="0.00"
+        style={{
+          width: '100%',
+          padding: '10px',
+          borderRadius: '8px',
+          border: '1px solid #d1d5db',
+          fontSize: '16px',
+        }}
+      />
+    </div>
+
+    <div style={{ marginBottom: '16px' }}>
+      <label
+        style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}
+      >
+        Category
+      </label>
+      <select
+        name="category"
+        value={formData.category}
+        onChange={onInputChange}
+        style={{
+          width: '100%',
+          padding: '10px',
+          borderRadius: '8px',
+          border: '1px solid #d1d5db',
+          fontSize: '16px',
+        }}
+      >
+        {categories.map((cat) => (
+          <option key={cat} value={cat}>
+            {cat}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    <div style={{ marginBottom: '24px' }}>
+      <label
+        style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}
+      >
+        Date
+      </label>
+      <input
+        type="date"
+        name="date"
+        value={formData.date}
+        onChange={onInputChange}
+        style={{
+          width: '100%',
+          padding: '10px',
+          borderRadius: '8px',
+          border: '1px solid #d1d5db',
+          fontSize: '16px',
+        }}
+      />
+    </div>
+
+    <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+      <button
+        type="button"
+        onClick={() => {
+          setShowCreateModal(false);
+          setShowEditModal(false);
+          resetForm();
+        }}
+        style={{
+          padding: '10px 20px',
+          borderRadius: '8px',
+          border: '1px solid #d1d5db',
+          backgroundColor: 'white',
+          cursor: 'pointer',
+          fontSize: '16px',
+        }}
+      >
+        Cancel
+      </button>
+
+      <button
+        type="submit"
+        style={{
+          padding: '10px 20px',
+          borderRadius: '8px',
+          border: 'none',
+          backgroundColor: '#3b82f6',
+          color: 'white',
+          cursor: 'pointer',
+          fontSize: '16px',
+          opacity: 1,
+        }}
+      >
+        {submitText}
+      </button>
+    </div>
+  </form>
+);
 
 const Expense = () => {
   const { user } = useAuth();
@@ -26,8 +163,8 @@ const Expense = () => {
     category: "Food",
     date: new Date().toISOString().split("T")[0],
   });
-  
-const categories = [
+
+  const categories = [
     "Food",
     "Rent",
     "Utilities",
@@ -76,7 +213,7 @@ const categories = [
 
   const fetchBalances = async () => {
     try {
-      const data = await expenseService.getGroupBalances(selectedGroup);
+      const data = await expenseService.getGroupBalance(selectedGroup);
       setBalances(data.balances || []);
     } catch (error) {
       console.error('Failed to load balances', error);
@@ -91,27 +228,56 @@ const categories = [
   const handleCreateExpense = async (e) => {
     e.preventDefault();
     if (!formData.description || !formData.amount) {
-      toast.error('Please fill in all required fields');
+      toast.error('Fill required fields');
       return;
     }
+    if (!selectedGroup) {
+      toast.error('Select a group');
+      return;
+    }
+
     try {
-      setLoading(true);
-      await expenseService.createExpense({
-        ...formData,
+      // get current group details and members
+      const groupData = await groupService.getGroupById(selectedGroup);
+      const members = groupData.group.members || [];
+
+      if (!members.length) {
+        toast.error('Group has no members');
+        return;
+      }
+
+      const amount = parseFloat(formData.amount);
+
+      // Build equal splits
+      const splitAmount = amount / members.length;
+      const splits = members.map((member) => ({
+        user: member.user._id,
+        amount: splitAmount,
+        isPaid: member.user._id === user.id, // payer marks their own split paid
+      }));
+
+      // Build full expense object
+      const expense = {
         groupId: selectedGroup,
-        amount: parseFloat(formData.amount),
-      });
+        description: formData.description,
+        amount,
+        category: formData.category,
+        date: formData.date,
+        payer: user.id,    // from auth context
+        splits,
+      };
+
+      await expenseService.createExpense(expense);
       toast.success('Expense created!');
       setShowCreateModal(false);
       resetForm();
       fetchExpenses();
       fetchBalances();
     } catch (error) {
-      toast.error('Failed to create expense');
-    } finally {
-      setLoading(false);
+      toast.error(error?.response?.data?.message || 'Failed to create expense');
     }
   };
+
 
   const handleEditExpense = async (e) => {
     e.preventDefault();
@@ -176,200 +342,6 @@ const categories = [
     const myBalance = balances.find((b) => b.userId === user?.id);
     return myBalance ? myBalance.balance.toFixed(2) : '0.00';
   };
-
-  // ------------------- Modal Component -------------------
-  const Modal = ({ show, onClose, title, children }) => {
-    if (!show) return null;
-    return (
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-        }}
-      >
-        <div
-          style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            padding: '24px',
-            maxWidth: '500px',
-            width: '90%',
-            maxHeight: '90vh',
-            overflow: 'auto',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '20px',
-            }}
-          >
-            <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>{title}</h2>
-            <button
-              onClick={onClose}
-              style={{
-                background: 'none',
-                border: 'none',
-                fontSize: '24px',
-                cursor: 'pointer',
-                color: '#6b7280',
-              }}
-            >
-              <FaTimes />
-            </button>
-          </div>
-          {children}
-        </div>
-      </div>
-    );
-  };
-
-  // ------------------- Expense Form -------------------
-  const ExpenseForm = ({ onSubmit, submitText }) => (
-    <form onSubmit={onSubmit}>
-      <div style={{ marginBottom: '16px' }}>
-        <label
-          style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}
-        >
-          Description *
-        </label>
-        <input
-          type="text"
-          name="description"
-          value={formData.description}
-          onChange={handleInputChange}
-          required
-          placeholder="e.g., Grocery shopping"
-          style={{
-            width: '100%',
-            padding: '10px',
-            borderRadius: '8px',
-            border: '1px solid #d1d5db',
-            fontSize: '16px',
-          }}
-        />
-      </div>
-      <div style={{ marginBottom: '16px' }}>
-        <label
-          style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}
-        >
-          Amount ($) *
-        </label>
-        <input
-          type="number"
-          name="amount"
-          value={formData.amount}
-          onChange={handleInputChange}
-          required
-          step="0.01"
-          min="0"
-          placeholder="0.00"
-          style={{
-            width: '100%',
-            padding: '10px',
-            borderRadius: '8px',
-            border: '1px solid #d1d5db',
-            fontSize: '16px',
-          }}
-        />
-      </div>
-
-      <div style={{ marginBottom: '16px' }}>
-        <label
-          style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}
-        >
-          Category
-        </label>
-        <select
-          name="category"
-          value={formData.category}
-          onChange={handleInputChange}
-          style={{
-            width: '100%',
-            padding: '10px',
-            borderRadius: '8px',
-            border: '1px solid #d1d5db',
-            fontSize: '16px',
-          }}
-        >
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div style={{ marginBottom: '24px' }}>
-        <label
-          style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}
-        >
-          Date
-        </label>
-        <input
-          type="date"
-          name="date"
-          value={formData.date}
-          onChange={handleInputChange}
-          style={{
-            width: '100%',
-            padding: '10px',
-            borderRadius: '8px',
-            border: '1px solid #d1d5db',
-            fontSize: '16px',
-          }}
-        />
-      </div>
-
-      <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-        <button
-          type="button"
-          onClick={() => {
-            setShowCreateModal(false);
-            setShowEditModal(false);
-            resetForm();
-          }}
-          style={{
-            padding: '10px 20px',
-            borderRadius: '8px',
-            border: '1px solid #d1d5db',
-            backgroundColor: 'white',
-            cursor: 'pointer',
-            fontSize: '16px',
-          }}
-        >
-          Cancel
-        </button>
-
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            padding: '10px 20px',
-            borderRadius: '8px',
-            border: 'none',
-            backgroundColor: '#3b82f6',
-            color: 'white',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            fontSize: '16px',
-            opacity: loading ? 0.6 : 1,
-          }}
-        >
-          {loading ? 'Saving...' : submitText}
-        </button>
-      </div>
-    </form>
-  );
 
   // ------------------- If user has no groups -------------------
   if (groups.length === 0 && !loading) {
@@ -513,9 +485,8 @@ const categories = [
                   parseFloat(getMyBalance()) >= 0 ? '#f0fdf4' : '#fef2f2',
                 padding: '20px',
                 borderRadius: '12px',
-                border: `1px solid ${
-                  parseFloat(getMyBalance()) >= 0 ? '#86efac' : '#fca5a5'
-                }`,
+                border: `1px solid ${parseFloat(getMyBalance()) >= 0 ? '#86efac' : '#fca5a5'
+                  }`,
               }}
             >
               <h3
@@ -678,13 +649,17 @@ const categories = [
       {/* CREATE MODAL */}
       <Modal
         show={showCreateModal}
-        onClose={() => {
-          setShowCreateModal(false);
-          resetForm();
-        }}
-        title="Add Expense"
+        onClose={() => setShowCreateModal(false)}
+        title="Create New Expense"
       >
-        <ExpenseForm onSubmit={handleCreateExpense} submitText="Create Expense" />
+        <ExpenseForm
+          onSubmit={handleCreateExpense}
+          submitText="Create Expense"
+          formData={formData}
+          onInputChange={handleInputChange}
+          categories={categories}
+          loading={loading}
+        />
       </Modal>
 
       {/* EDIT MODAL */}
