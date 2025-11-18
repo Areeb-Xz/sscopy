@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import moment from 'moment';
 import { FaPlus, FaEdit, FaTrash, FaReceipt } from 'react-icons/fa';
 import Modal from '../../components/Modal';
+import { useNavigate } from "react-router-dom";
 
 // ------------------- Expense Form -------------------
 const ExpenseForm = ({ onSubmit, submitText, formData, onInputChange, categories }) => (
@@ -145,6 +146,7 @@ const ExpenseForm = ({ onSubmit, submitText, formData, onInputChange, categories
 
 const Expense = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [groups, setGroups] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
@@ -380,6 +382,22 @@ const Expense = () => {
   // ------------------- MAIN RENDER -------------------
   return (
     <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+      <button
+        type="button"
+        style={{
+          marginBottom: "1rem",
+          padding: "0.5rem 1rem",
+          background: "#3498db",
+          color: "#fff",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer"
+        }}
+        onClick={() => navigate('/dashboard')}
+      >
+        ← Back to Dashboard
+      </button>
+
       {/* Header */}
       <div
         style={{
@@ -662,7 +680,6 @@ const Expense = () => {
         />
       </Modal>
 
-      {/* EDIT MODAL */}
       <Modal
         show={showEditModal}
         onClose={() => {
@@ -672,8 +689,15 @@ const Expense = () => {
         }}
         title="Edit Expense"
       >
-        <ExpenseForm onSubmit={handleEditExpense} submitText="Save Changes" />
+        <ExpenseForm
+          onSubmit={handleEditExpense}
+          submitText="Save Changes"
+          formData={formData}
+          onInputChange={handleInputChange}     // Use the edit-version if you have a separate one
+          categories={categories}
+        />
       </Modal>
+
     </div>
   );
 };

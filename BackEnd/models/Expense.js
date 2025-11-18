@@ -15,7 +15,7 @@ const ExpenseSchema = new Schema({
   description: { type: String },
   amount: { type: Number, required: true, min: 0 },
   payer: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  category: { type: String, enum: ['Food', 'Travel', 'Utilities', 'Other'], default: 'Other' },
+  category: { type: String, enum: ['Food', 'Transportation', 'Utilities', 'Rent', 'Entertainment', 'Travel', 'Other'], default: 'Other' },
   date: { type: Date, default: Date.now },
   splits: {
     type: [ExpenseSplitSchema],
