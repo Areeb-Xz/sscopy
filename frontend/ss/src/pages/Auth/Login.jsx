@@ -18,7 +18,7 @@ const Login = () => {
       ...formData,
       [e.target.name]: e.target.value,
     });
-    setError(''); // Clear error when user types
+    setError('');
   };
 
   const handleSubmit = async (e) => {
@@ -107,7 +107,7 @@ const Login = () => {
       </form>
 
       <p style={{ marginTop: '20px', textAlign: 'center' }}>
-        Don't have an account? <Link to="/register">Register here</Link>
+        Don't have an account? <Link to="/signup">Sign up here</Link>
       </p>
     </div>
   );

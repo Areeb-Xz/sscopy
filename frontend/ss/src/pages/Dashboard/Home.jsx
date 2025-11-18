@@ -39,7 +39,7 @@ const Home = () => {
       await groupService.createGroup(newGroup);
       setNewGroup({ name: '', description: '' });
       setShowCreateForm(false);
-      fetchGroups(); // Refresh list
+      fetchGroups();
     } catch (err) {
       setError(err.message || 'Failed to create group');
     }

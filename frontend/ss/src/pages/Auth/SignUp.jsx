@@ -1,91 +1,167 @@
-import React, { useState } from "react";
-import AuthLayout from "../../components/layouts/AuthLayout";
-import { useNavigate, Link } from "react-router-dom";
-import Input from "../../components/Inputs/Input";
-import { validateEmail } from "../../utils/helper";
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const SignUp = () => {
-  const [profilePic, setProfilePic] = useState(null);
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const [error, setError] = useState(null);
-
+  const { register } = useAuth();
   const navigate = useNavigate();
 
-  const handleSignUp = async (e) => {
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+    setError('');
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
 
-    if (!fullName) {
-      setError("Please enter your full name");
-      return;
-    }
-    if (!validateEmail(email)) {
-      setError("Please enter a valid Email address");
-      return;
-    }
-
-    if (!password) {
-      setError("Please enter the password");
+    // Validation
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
       return;
     }
 
-    setError("");
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { confirmPassword, ...registerData } = formData;
+      await register(registerData);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <AuthLayout>
-      <div className="lg:w-[100%] h-auto md:h-full mt-10 md:mt-0 flex flex-col justify-center">
-        <h3 className="text-xl font-semibold text-black">Create an Account</h3>
+    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
+      <h2>Sign Up for SplitSmart</h2>
+      
+      {error && (
+        <div style={{ 
+          padding: '10px', 
+          marginBottom: '20px', 
+          backgroundColor: '#fee', 
+          color: '#c33',
+          borderRadius: '4px' 
+        }}>
+          {error}
+        </div>
+      )}
 
-        <p className="text-xs text-slate-700 mt-[5px] mb-6">
-          Join us today by entering your details below.
-        </p>
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: '15px' }}>
+          <label>Full Name:</label>
+          <input
+            type="text"
+            name="fullName"
+            value={formData.fullName}
+            onChange={handleChange}
+            required
+            style={{ 
+              width: '100%', 
+              padding: '8px', 
+              marginTop: '5px',
+              border: '1px solid #ccc',
+              borderRadius: '4px'
+            }}
+          />
+        </div>
 
-        <form onSubmit={handleSignUp}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              value={fullName}
-              onChange={({ target }) => setFullName(target.value)}
-              label="Full Name"
-              placeholder="John"
-              type="text"
-            />
+        <div style={{ marginBottom: '15px' }}>
+          <label>Email:</label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            style={{ 
+              width: '100%', 
+              padding: '8px', 
+              marginTop: '5px',
+              border: '1px solid #ccc',
+              borderRadius: '4px'
+            }}
+          />
+        </div>
 
-            <Input
-              value={email}
-              onChange={({ target }) => setEmail(target.value)}
-              label="Email Address"
-              placeholder="john@example.com"
-              type="email"
-            />
-            <div className="col-span-2">
-              <Input
-                value={password}
-                onChange={({ target }) => setPassword(target.value)}
-                label="Password"
-                placeholder="Min 8 characters"
-                type="password"
-              />
-            </div>
-          </div>
+        <div style={{ marginBottom: '15px' }}>
+          <label>Password:</label>
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+            minLength={8}
+            style={{ 
+              width: '100%', 
+              padding: '8px', 
+              marginTop: '5px',
+              border: '1px solid #ccc',
+              borderRadius: '4px'
+            }}
+          />
+        </div>
 
-          {error && <p className="text-red-500 text-xs pb-2.5">{error}</p>}
+        <div style={{ marginBottom: '15px' }}>
+          <label>Confirm Password:</label>
+          <input
+            type="password"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            required
+            style={{ 
+              width: '100%', 
+              padding: '8px', 
+              marginTop: '5px',
+              border: '1px solid #ccc',
+              borderRadius: '4px'
+            }}
+          />
+        </div>
 
-          <button type="submit" className="btn-primary">
-            SIGN UP
-          </button>
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            width: '100%',
+            padding: '10px',
+            backgroundColor: loading ? '#ccc' : '#28a745',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: loading ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {loading ? 'Creating account...' : 'Sign Up'}
+        </button>
+      </form>
 
-          <p className="text-[13px] text-slate-800 mt-3">
-            Already have an account?{" "}
-            <Link className="font-medium text-purple-500 underline" to="/login">
-              Login
-            </Link>
-          </p>
-        </form>
-      </div>
-    </AuthLayout>
+      <p style={{ marginTop: '20px', textAlign: 'center' }}>
+        Already have an account? <Link to="/login">Login here</Link>
+      </p>
+    </div>
   );
 };
 
