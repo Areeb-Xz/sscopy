@@ -4,7 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 // Import your pages
 import Login from './pages/Auth/Login';
-import SignUp from "./pages/Auth/SignUp";
+import Register from './pages/Auth/Register';
 import Home from './pages/Dashboard/Home';
 import Expense from './pages/Dashboard/Expense';
 import Income from './pages/Dashboard/Income';
@@ -21,7 +21,7 @@ function App() {
       />
       <Route 
         path="/register" 
-        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <SignUp />} 
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />} 
       />
 
       {/* Protected routes */}
