@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 // ------------------- Expense Form -------------------
 const ExpenseForm = ({ onSubmit, submitText, formData, onInputChange, categories }) => (
   <form onSubmit={onSubmit}>
-    <div style={{ marginBottom: '16px' }}>
+    <div style={{ marginBottom: '16px', fontFamily: "Inter, sans-serif" }}>
       <label
         style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}
       >
@@ -153,9 +153,13 @@ const Expense = () => {
   const [expenses, setExpenses] = useState([]);
   const [balances, setBalances] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [currentGroupDetails, setCurrentGroupDetails] = useState(null);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteError, setInviteError] = useState('');
 
   const [editingExpense, setEditingExpense] = useState(null);
 
@@ -183,6 +187,7 @@ const Expense = () => {
     if (selectedGroup) {
       fetchExpenses();
       fetchBalances();
+      fetchGroupDetails();
     }
   }, [selectedGroup]);
 
@@ -219,6 +224,16 @@ const Expense = () => {
       setBalances(data.balances || []);
     } catch (error) {
       console.error('Failed to load balances', error);
+    }
+  };
+
+  const fetchGroupDetails = async () => {
+    if (!selectedGroup) return;
+    try {
+      const data = await groupService.getGroupById(selectedGroup);
+      setCurrentGroupDetails(data.group);
+    } catch (error) {
+      console.error('Failed to load group details', error);
     }
   };
 
@@ -317,6 +332,35 @@ const Expense = () => {
     }
   };
 
+  const handleInviteMember = async (e) => {
+    e.preventDefault();
+    setInviteError('');
+
+    if (!inviteEmail.trim()) {
+      setInviteError('Please enter an email address');
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(inviteEmail)) {
+      setInviteError('Please enter a valid email address');
+      return;
+    }
+
+    try {
+      await groupService.addMember(selectedGroup, inviteEmail.trim());
+      toast.success('Member invited successfully!');
+      setInviteEmail('');
+      setShowInviteModal(false);
+      fetchGroupDetails(); // Refresh the members listc
+    } catch (error) {
+      const msg = error?.response?.data?.message || 'Failed to invite member';
+      setInviteError(msg);
+    }
+  };
+
+
   const openEditModal = (expense) => {
     setEditingExpense(expense);
     setFormData({
@@ -341,14 +385,17 @@ const Expense = () => {
     expenses.reduce((sum, exp) => sum + exp.amount, 0).toFixed(2);
 
   const getMyBalance = () => {
-    const myBalance = balances.find((b) => b.userId === user?.id);
-    return myBalance ? myBalance.balance.toFixed(2) : '0.00';
+    const myBalance = balances.find(b => b.userId === user?.id);
+    return myBalance && myBalance.balance !== undefined
+      ? myBalance.balance.toFixed(2)
+      : '0.00';
   };
+
 
   // ------------------- If user has no groups -------------------
   if (groups.length === 0 && !loading) {
     return (
-      <div style={{ padding: '20px', textAlign: 'center' }}>
+      <div style={{ padding: '20px', textAlign: 'center', fontFamily: "Inter, sans-serif" }}>
         <h1
           style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '20px' }}
         >
@@ -407,26 +454,55 @@ const Expense = () => {
           marginBottom: '30px',
         }}
       >
-        <h1 style={{ fontSize: '32px', fontWeight: 'bold' }}>Expenses</h1>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          disabled={!selectedGroup}
-          style={{
-            backgroundColor: '#3b82f6',
-            color: 'white',
-            padding: '12px 24px',
-            borderRadius: '8px',
-            border: 'none',
-            cursor: selectedGroup ? 'pointer' : 'not-allowed',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '16px',
-            opacity: selectedGroup ? 1 : 0.5,
-          }}
-        >
-          <FaPlus /> Add Expense
-        </button>
+        <h1 style={{ fontSize: '32px', fontWeight: 'bold', fontFamily: 'Inter' }}>Expenses</h1>
+
+        {selectedGroup && (
+          <div style={{ display: 'flex', gap: '12px', marginBottom: '30px' }}>
+            <button
+              onClick={() => setShowInviteModal(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '12px 20px',
+                backgroundColor: '#10b981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '16px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'background-color 0.2s',
+              }}
+              onMouseEnter={(e) => (e.target.style.backgroundColor = '#059669')}
+              onMouseLeave={(e) => (e.target.style.backgroundColor = '#10b981')}
+            >
+              <FaPlus /> Invite Member
+            </button>
+
+            <button
+              onClick={() => setShowCreateModal(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '12px 20px',
+                backgroundColor: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '16px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'background-color 0.2s',
+              }}
+              onMouseEnter={(e) => (e.target.style.backgroundColor = '#2563eb')}
+              onMouseLeave={(e) => (e.target.style.backgroundColor = '#3b82f6')}
+            >
+              <FaPlus /> Add Expense
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Group Selector */}
@@ -455,6 +531,52 @@ const Expense = () => {
               </option>
             ))}
           </select>
+        </div>
+      )}
+      {/* Group Members */}
+      {selectedGroup && currentGroupDetails && (
+        <div style={{ marginBottom: '20px', backgroundColor: '#f9fafb', padding: '20px', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '12px', color: '#1f2937' }}>
+            Group Members ({currentGroupDetails.members?.length || 0})
+          </h3>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+            {currentGroupDetails.members?.map((member) => (
+              <div
+                key={member.user._id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 14px',
+                  backgroundColor: '#ffffff',
+                  borderRadius: '20px',
+                  border: '1px solid #d1d5db',
+                  fontSize: '14px',
+                }}
+              >
+                <div
+                  style={{
+                    width: '30px',
+                    height: '30px',
+                    borderRadius: '50%',
+                    backgroundColor: '#3b82f6',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 600,
+                    fontSize: '12px',
+                  }}
+                >
+                  {member.user.fullName?.charAt(0).toUpperCase() || 'U'}
+                </div>
+                <span style={{ color: '#374151' }}>
+                  {member.user.fullName || member.user.email}
+                  {member.user.id === user?.id && <span style={{ color: '#6b7280', marginLeft: '4px' }}>(You)</span>}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -663,6 +785,94 @@ const Expense = () => {
           )}
         </>
       )}
+
+      {/* Invite Member Modal */}
+      <Modal show={showInviteModal} onClose={() => {
+        setShowInviteModal(false);
+        setInviteEmail('');
+        setInviteError('');
+      }}>
+        <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '20px', color: '#1f2937' }}>
+          Invite Member to Group
+        </h2>
+
+        {inviteError && (
+          <div style={{
+            padding: '12px',
+            backgroundColor: '#fee2e2',
+            border: '1px solid #fca5a5',
+            borderRadius: '8px',
+            color: '#991b1b',
+            marginBottom: '16px',
+            fontSize: '14px'
+          }}>
+            {inviteError}
+          </div>
+        )}
+
+        <form onSubmit={handleInviteMember}>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '14px' }}>
+              Email Address
+            </label>
+            <input
+              type="email"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              placeholder="friend@example.com"
+              required
+              style={{
+                width: '100%',
+                padding: '10px',
+                borderRadius: '8px',
+                border: '1px solid #d1d5db',
+                fontSize: '16px'
+              }}
+            />
+            <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '6px' }}>
+              Enter the email address of the person you want to add to this group
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <button
+              type="button"
+              onClick={() => {
+                setShowInviteModal(false);
+                setInviteEmail('');
+                setInviteError('');
+              }}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: '#f3f4f6',
+                color: '#374151',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              style={{
+                padding: '10px 20px',
+                backgroundColor: '#10b981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Send Invite
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* CREATE MODAL */}
       <Modal
