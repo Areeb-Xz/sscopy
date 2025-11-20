@@ -77,10 +77,9 @@
 
 | Name | Role | Responsibilities |
 | :-- | :-- | :-- |
-| **Mohammad Areeb** | Backend Developer | Express.js server, REST API endpoints, MongoDB integration, business logic |
+| **Mohammad Areeb** | Backend Developer \Lead | Express.js server, REST API endpoints, MongoDB integration, business logic |
 | **Prabhkrit Singh** | Frontend Developer | React components, UI/UX, page routing, state management |
 | **Samarjeet Singh** | Database \& REST API | MongoDB schema design, data relationships, API architecture |
-| **You** | Project Coordinator \& Integration Lead | Frontend-backend integration, bug fixes, documentation, standup coordination |
 
 
 ***
@@ -640,9 +639,9 @@ app.use('/api/income', require('./routes/incomeRoutes'));
 
 | Day | Tasks | Owner | Hours |
 | :-- | :-- | :-- | :-- |
-| Mon-Tue | Fix Expense bugs (focus loss, create button) | You/Prabhkrit | 3-4h |
+| Mon-Tue | Fix Expense bugs (focus loss, create button) | Mohammad/Prabhkrit | 3-4h |
 | Wed | Create Income backend (controller + routes) | Mohammad/Samarjeet | 4h |
-| Thu | Create Income frontend (page + service) | Prabhkrit/You | 4h |
+| Thu | Create Income frontend (page + service) | Prabhkrit/Mohammad | 4h |
 | Fri | Testing \& Integration | Team | 2-3h |
 
 **Deliverables:**

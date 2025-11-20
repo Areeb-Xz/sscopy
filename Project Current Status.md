@@ -82,10 +82,9 @@
 
 | Name | Role | Responsibilities |
 |------|------|------------------|
-| **Mohammad Areeb** | Backend Developer | Express.js API, MongoDB, business logic |
+| **Mohammad Areeb** | Backend Developer\Lead | Express.js API, MongoDB, business logic |
 | **Prabhkrit Singh** | Frontend Developer | React components, UI/UX, styling |
 | **Samarjeet Singh** | Database/DevOps | MongoDB schema, API architecture |
-| **You** | Integration Lead | Frontend-backend integration, bug fixes, coordination |
 
 ---
 
